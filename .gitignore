@@ -1,0 +1,38 @@
+# Red de seguridad: los archivos se agregan uno por uno con git add,
+# pero esto evita que se suba algo de aqui por accidente.
+
+# contrasenas del wifi
+secretos.h
+
+# archivos que genera LaTeX al compilar
+build/
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.xdv
+
+# archivos que genera Arduino al compilar
+*.bin
+*.elf
+*.map
+
+# videos (pesan mucho y van en Drive)
+*.mp4
+*.mov
+*.mkv
+
+# archivos del sistema, de Google Drive y de editores
+desktop.ini
+Thumbs.db
+.DS_Store
+~$*
+*.tmp
+.vscode/
