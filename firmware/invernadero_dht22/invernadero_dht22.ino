@@ -1,5 +1,5 @@
 // Invernadero IoT - Los multiplexores
-// La ESP32-S3 mide la temperatura (DHT22) y la humedad de la tierra (sensor capacitivo).
+// La ESP32-S3 mide la temperatura (DHT11 o DHT22) y la humedad de la tierra (sensor capacitivo).
 // Si hace calor prende el ventilador y el servo abre la ventana; si la tierra esta seca
 // riega unos segundos, espera a que el agua se absorba y vuelve a medir.
 // La misma placa sirve una pagina web con los valores, las graficas y los ajustes.
@@ -12,8 +12,14 @@
 #include "secretos.h"
 #include "pagina.h"
 
+// ---------- sensor de temperatura ----------
+// hay dos carpetas con el mismo programa: invernadero_dht11 e invernadero_dht22.
+// solo cambian estas dos lineas; lo demas siempre se cambia en las dos (herramientas/sincronizar.ps1)
+const uint8_t MODELO_DHT = DHT22;
+const char* NOMBRE_DHT = "DHT22";
+
 // ---------- pines (ver documento/img/alambrado_completo.png) ----------
-const int PIN_DHT = 4;          // dato del DHT22
+const int PIN_DHT = 4;          // dato del sensor de temperatura
 const int PIN_SUELO = 5;        // salida AOUT del sensor de humedad; tiene que ser un pin del 1 al 10
 const int PIN_VENTILADOR = 6;   // base del TIP120 del ventilador (con su resistencia de 1 k)
 const int PIN_BOMBA = 7;        // base del TIP120 de la bomba (con su resistencia de 1 k)
@@ -39,7 +45,7 @@ const int ANGULO_VENTANA_CERRADA = 0;            // grados del servo; se ajustan
 const int ANGULO_VENTANA_ABIERTA = 90;
 const int PULSO_0_GRADOS = 500;                  // microsegundos; el SG90 va de 0 a 180 grados entre estos dos
 const int PULSO_180_GRADOS = 2400;
-const unsigned long TIEMPO_ENTRE_LECTURAS = 2000;   // el DHT22 no puede leer mas rapido
+const unsigned long TIEMPO_ENTRE_LECTURAS = 2000;   // el DHT22 no puede leer mas rapido (el DHT11 si, pero no hace falta)
 const int TAMANO_HISTORIAL = 150;                   // 150 lecturas cada 2 s = 5 minutos
 const int MUESTRAS_SUELO = 16;                      // lecturas que se promedian para bajar el ruido
 const int FALLAS_DHT_PERMITIDAS = 3;                // lecturas fallidas seguidas antes de marcar "sin lectura"
@@ -47,7 +53,7 @@ const unsigned long ESPERA_POR_RED_AL_ARRANCAR = 8000;   // tiempo que se prueba
 const unsigned long TIEMPO_ENTRE_RECONEXIONES = 12000;   // sin wifi, cada cuanto se prueba la siguiente red
 const char* NOMBRE_EN_LA_RED = "invernadero";            // la pagina tambien abre en http://invernadero.local
 
-DHT sensorDht(PIN_DHT, DHT22);
+DHT sensorDht(PIN_DHT, MODELO_DHT);
 WebServer servidor(80);
 Preferences memoria;
 
@@ -144,7 +150,7 @@ float convertirAHumedad(int lectura) {
   return porcentaje;
 }
 
-// lee el DHT22; si falla unas pocas veces seguidas se conserva el ultimo valor bueno,
+// lee el sensor de temperatura; si falla unas pocas veces seguidas se conserva el ultimo valor bueno,
 // para que el ventilador no se apague por una sola lectura mala
 void leerDht() {
   float temperatura = sensorDht.readTemperature();
@@ -336,6 +342,7 @@ void responderDatos() {
   json.reserve(9000);
   json = "{";
   json += "\"lectura\":" + String(numeroDeLectura) + ",";
+  json += "\"sensorTemperatura\":\"" + String(NOMBRE_DHT) + "\",";
   json += "\"temperatura\":" + numeroParaJson(temperaturaActual, 1) + ",";
   json += "\"humedadAire\":" + numeroParaJson(humedadAireActual, 0) + ",";
   json += "\"humedadSuelo\":" + numeroParaJson(humedadSueloActual, 0) + ",";
@@ -554,7 +561,7 @@ void setup() {
   Serial.setTxTimeoutMs(0);
   delay(1000);
   Serial.println();
-  Serial.println("=== Invernadero IoT ===");
+  Serial.printf("=== Invernadero IoT (version %s) ===\n", NOMBRE_DHT);
 
   cargarAjustes();
 
@@ -564,7 +571,7 @@ void setup() {
 
   analogReadResolution(12);
   sensorDht.begin();
-  delay(2000);     // el DHT22 necesita unos segundos al prenderse
+  delay(2000);     // el sensor de temperatura necesita unos segundos al prenderse
   hacerLectura();  // primera lectura antes del wifi, para que los actuadores arranquen bien
 
   conectarWifiAlArrancar();

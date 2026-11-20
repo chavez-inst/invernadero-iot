@@ -207,7 +207,7 @@ const char PAGINA_HTML[] PROGMEM = R"rawliteral(
     <text class="estado" x="308" y="96">Ventilador</text>
     <text class="estado" x="308" y="110"><tspan id="estadoVentilador">--</tspan></text>
 
-    <!-- temperatura: DHT22 en la pared del fondo -->
+    <!-- temperatura: DHT11 o DHT22 en la pared del fondo -->
     <rect x="112" y="122" width="10" height="15" rx="2" fill="#E8604C"/>
     <text class="nombre" x="128" y="132">Temperatura</text>
     <text class="cifra" id="cifraTemperatura" x="126" y="166">--</text>
@@ -613,7 +613,11 @@ async function actualizar() {
     // avisos con lo que hay que revisar
     const aviso = document.getElementById("aviso");
     const textos = [];
-    if (d.temperatura === null) textos.push("El DHT22 no responde: revisa sus cables (+, out y −).");
+    if (d.temperatura === null) {
+      // el programa dice para que sensor se compilo; si no coincide con el conectado, no hay lectura
+      const sensor = d.sensorTemperatura || "sensor de temperatura";
+      textos.push("El " + sensor + " no responde: revisa sus cables (+, out y −) y que el programa cargado sea el de ese sensor.");
+    }
     if (d.riego === "pausado") textos.push("El riego está en pausa porque la tierra sigue seca: revisa que el sensor esté en la tierra y que haya agua en el depósito.");
     aviso.textContent = textos.join(" ");
     if (d.riego === "pausado") {

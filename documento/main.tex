@@ -155,7 +155,7 @@ Módulo DHT22 (AM2302) & 1 & Temperatura y humedad del aire \\
 Sensor de humedad de suelo capacitivo v1.2 & 1 & Humedad de la tierra \\
 Ventilador de \SI{5}{\volt}, $40 \times 40$~mm & 1 & Actuador 1: saca el aire caliente \\
 Servomotor SG90 & 1 & Actuador 2: abre la ventana \\
-Mini bomba de agua sumergible de 3 a \SI{6}{\volt} & 1 & Actuador 3: riego \\
+Mini bomba de agua de diafragma de \SI{5}{\volt} & 1 & Actuador 3: riego \\
 Transistor TIP120 & 2 & Interruptor del ventilador y de la bomba \\
 Diodo 1N4007 & 2 & Protección contra el pico de voltaje de los motores \\
 Resistencia de \SI{1}{\kilo\ohm} & 2 & Corriente de base de cada transistor \\
@@ -468,8 +468,10 @@ computadora. Si la placa deja de responder, la página avisa desde qué hora no 
 La maqueta es un invernadero de cartón pluma con techo de mica sobre una base de $50 \times 35$~cm. La ventana está en
 la pared izquierda y el servo hace de bisagra, sin varillas ni mecanismos. El ventilador está en la pared derecha,
 del lado de la protoboard, para que sus cables sean cortos. Dentro van el tupper con tierra y una planta, el sensor de
-humedad enterrado y el DHT22 en la pared trasera, lejos de la tierra mojada. El depósito de agua con la bomba está
-afuera, y la manguera entra por la pared trasera. El frente es una hoja de mica que se levanta, para meter la mano y
+humedad enterrado y el DHT22 en la pared trasera, lejos de la tierra mojada. El depósito de agua y la bomba están
+afuera. La bomba es de diafragma, así que no se mete al agua: chupa del depósito por una manguera y empuja el agua
+por otra, que entra por la pared trasera y queda acostada sobre la tierra, con el extremo tapado y unos hoyitos que
+reparten el agua como una regadera. El frente es una hoja de mica que se levanta, para meter la mano y
 para que se vea el interior. La figura~\ref{fig:maqueta} muestra el croquis con medidas.
 
 \begin{figure}[H]
@@ -613,9 +615,10 @@ Las tablas salen del mismo script que dibuja el diagrama de alambrado, \texttt{a
 
 \section{Programa de la placa}
 
-Programa principal (\texttt{firmware/invernadero/invernadero.ino}). La página web, en \texttt{pagina.h}, está en el
+Programa principal (\texttt{firmware/invernadero\_dht22/invernadero\_dht22.ino}). La versión para el DHT11, en
+\texttt{firmware/invernadero\_dht11}, solo cambia en el modelo del sensor. La página web, en \texttt{pagina.h}, está en el
 repositorio del proyecto.
 
-\lstinputlisting{../firmware/invernadero/invernadero.ino}
+\lstinputlisting{../firmware/invernadero_dht22/invernadero_dht22.ino}
 
 \end{document}

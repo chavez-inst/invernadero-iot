@@ -3,17 +3,26 @@
 Proyecto de Sistemas de Comunicaciones (Facultad de Ingeniería, UNAM, semestre 2027-1), grupo 02.
 Equipo **Los multiplexores**: Chávez López Brayan Alejandro, Chávez García Isaac, Maya Torres Bruno y Muñoz Mendoza David.
 
-Una ESP32-S3 mide la temperatura (DHT22) y la humedad de la tierra (sensor capacitivo) de un invernadero a escala.
+Una ESP32-S3 mide la temperatura (DHT22, o DHT11 mientras se consigue) y la humedad de la tierra (sensor capacitivo)
+de un invernadero a escala.
 Si hace calor prende un ventilador y un servo abre la ventana; si la tierra está seca, una bomba riega por pulsos.
 La misma placa sirve una página web con las gráficas de los sensores y de los actuadores, que se abre desde el celular
 o la computadora conectados a la misma red wifi.
+
+## Cargar el programa (lo más fácil)
+
+Descargar el repositorio (**Code → Download ZIP**), extraerlo y abrir **`CARGAR_PROGRAMA.bat`** con doble clic.
+Revisa e instala lo que falte, pregunta qué programa y qué sensor, pide la red wifi, busca la placa, carga el programa
+y abre la página. Los pasos están en [`COMO_CARGAR.md`](COMO_CARGAR.md).
 
 ## Contenido
 
 | Carpeta | Qué hay |
 |---|---|
-| `firmware/invernadero/` | Programa principal (Arduino IDE), con la página web en `pagina.h` |
-| `firmware/prueba_componentes/` | Programa para probar cada sensor y actuador por separado al armar |
+| `firmware/invernadero_dht11/` y `invernadero_dht22/` | Programa principal (Arduino IDE), con la página web en `pagina.h`, para cada modelo de sensor de temperatura |
+| `firmware/prueba_componentes_dht11/` y `_dht22/` | Programa para probar cada sensor y actuador por separado al armar |
+| `CARGAR_PROGRAMA.bat` y `herramientas/cargar_invernadero.ps1` | Programa de carga paso a paso para Windows |
+| `guias/` | Instructivo de la maqueta, guía de la reunión de armado y propuesta de la maqueta (PDF) |
 | `documento/` | Trabajo escrito en LaTeX (`main.tex`); figuras en `img/`, generadas con los scripts de `graficas/` |
 | `documento/tablas/` | Tabla de piezas y cables, generada por `graficas/alambrado.py` |
 | `documento/datos/` | CSV que se bajan de la página durante las pruebas |
@@ -26,7 +35,7 @@ puntos con la fila de pines J1 en la columna i.
 
 | Pin | Conexión |
 |---|---|
-| GPIO 4 | Dato del DHT22 |
+| GPIO 4 | Dato del DHT11 o DHT22 |
 | GPIO 5 | Salida AOUT del sensor de humedad (ADC1) |
 | GPIO 6 | Base del TIP120 del ventilador (con 1 kΩ) |
 | GPIO 7 | Base del TIP120 de la bomba (con 1 kΩ) |
@@ -35,13 +44,14 @@ puntos con la fila de pines J1 en la columna i.
 Los actuadores se alimentan con un eliminador de 5 V aparte y las tierras se unen. Diagrama completo en
 `documento/img/alambrado_completo.png` y lista de cables en `documento/tablas/cables.md`.
 
-## Cómo usarlo
+## Cargarlo a mano con el Arduino IDE
 
 1. En Arduino IDE, instalar el soporte de placas `esp32` de Espressif (versión 3) y la librería "DHT sensor library"
    (con "Adafruit Unified Sensor").
 2. Placa "ESP32S3 Dev Module", "Flash Size" en 16 MB, "PSRAM" en "OPI PSRAM" y "USB CDC On Boot" en "Enabled".
 3. Copiar `secretos_ejemplo.h` como `secretos.h` y escribir las redes wifi (de 2.4 GHz).
-4. Cargar `firmware/invernadero/` y abrir el monitor serie a 115200 baudios. La placa escribe su IP.
+4. Cargar `firmware/invernadero_dht11/` o `firmware/invernadero_dht22/`, según el sensor, y abrir el monitor serie a
+   115200 baudios. La placa escribe su IP.
 5. Abrir `http://invernadero.local` o la IP en el navegador del celular o de la computadora, en la misma red.
 
 ## Qué muestra la página
@@ -53,4 +63,10 @@ necesita internet: todo va dentro de `pagina.h`. Los datos están en JSON en `/d
 
 ## Contraseñas del wifi
 
-Los nombres y contraseñas de las redes van en `firmware/.../secretos.h`, que no se sube al repositorio.
+Los nombres y contraseñas de las redes van en `firmware/.../secretos.h`, que no se sube al repositorio. El programa de
+carga lo escribe en una copia del programa dentro de la carpeta del usuario, fuera del repositorio.
+
+## Dos versiones del programa
+
+Las carpetas `_dht11` y `_dht22` tienen el mismo programa; solo cambian `MODELO_DHT` y `NOMBRE_DHT` al inicio. Cualquier
+otro cambio se hace en las dos.

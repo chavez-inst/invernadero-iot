@@ -1,5 +1,5 @@
 # Sirve la pagina del invernadero con datos simulados, para probarla en la computadora sin la placa.
-# Toma la pagina tal cual de firmware/invernadero/pagina.h y responde /datos con lecturas que cambian:
+# Toma la pagina tal cual de firmware/invernadero_dht22/pagina.h (la de dht11 es igual) y responde /datos con lecturas que cambian:
 # la temperatura sube y baja entre 23 y 31 grados, y la tierra se va secando hasta que la bomba riega.
 # Uso: python -I simular_pagina.py   y abrir http://localhost:8765
 import json
@@ -10,7 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs
 
-PAGINA_H = Path(__file__).resolve().parent.parent / "firmware" / "invernadero" / "pagina.h"
+PAGINA_H = Path(__file__).resolve().parent.parent / "firmware" / "invernadero_dht22" / "pagina.h"
 PUERTO = 8765
 SEGUNDOS_ENTRE_LECTURAS = 2
 TAMANO_HISTORIAL = 150
@@ -68,7 +68,7 @@ def datos():
     elif estado["riego"] == "absorbiendo":
         restante = max(0, math.ceil(ajustes["segundosEspera"] - transcurrido))
     lectura_suelo = round(ajustes["lecturaSeco"] - estado["suelo"] / 100 * (ajustes["lecturaSeco"] - ajustes["lecturaMojado"]))
-    return {"lectura": estado["lectura"], "temperatura": historial["temperatura"][-1],
+    return {"lectura": estado["lectura"], "sensorTemperatura": "DHT22", "temperatura": historial["temperatura"][-1],
             "humedadAire": historial["humedadAire"][-1], "humedadSuelo": round(estado["suelo"]),
             "lecturaSuelo": lectura_suelo, "ventilador": estado["ventilador"], "ventana": estado["ventana"],
             "bomba": estado["bomba"], "riego": estado["riego"], "riegosSeguidos": estado["riegosSeguidos"],

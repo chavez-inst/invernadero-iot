@@ -10,8 +10,15 @@
 
 #include <WiFi.h>
 #include <WebServer.h>
+#include <ESPmDNS.h>
 #include <DHT.h>
 #include "secretos.h"
+
+// ---------- sensor de temperatura ----------
+// hay dos carpetas con el mismo programa: prueba_componentes_dht11 y prueba_componentes_dht22.
+// solo cambian estas dos lineas; lo demas siempre se cambia en las dos (herramientas/sincronizar.ps1)
+const uint8_t MODELO_DHT = DHT11;
+const char* NOMBRE_DHT = "DHT11";
 
 // mismos pines que el programa principal
 const int PIN_DHT = 4;
@@ -24,8 +31,9 @@ const int PIN_LED_RGB = 48;
 const int PULSO_0_GRADOS = 500;
 const int PULSO_180_GRADOS = 2400;
 const unsigned long SEGUNDOS_BOMBA = 2;
+const char* NOMBRE_EN_LA_RED = "invernadero";   // la pagina tambien abre en http://invernadero.local
 
-DHT sensorDht(PIN_DHT, DHT22);
+DHT sensorDht(PIN_DHT, MODELO_DHT);
 WebServer servidor(80);
 
 float temperatura = NAN, humedadAire = NAN;
@@ -69,7 +77,8 @@ int leerSuelo() {
 }
 
 void imprimirEstado() {
-  Serial.printf("DHT22: %s C, %s %%   Suelo (0 a 4095): %d   Ventilador: %s   Bomba: %s   Servo: %d grados   IP: %s\n",
+  Serial.printf("%s: %s C, %s %%   Suelo (0 a 4095): %d   Ventilador: %s   Bomba: %s   Servo: %d grados   IP: %s\n",
+                NOMBRE_DHT,
                 isnan(temperatura) ? "sin lectura" : String(temperatura, 1).c_str(),
                 isnan(humedadAire) ? "--" : String(humedadAire, 0).c_str(),
                 lecturaSuelo,
@@ -103,8 +112,8 @@ const char PAGINA_PRUEBA[] PROGMEM = R"rawliteral(
 </style></head><body>
 <h1>Prueba de componentes</h1>
 <table>
- <tr><td>Temperatura (DHT22)</td><td class="valor" id="t">--</td></tr>
- <tr><td>Humedad del aire (DHT22)</td><td class="valor" id="ha">--</td></tr>
+ <tr><td>Temperatura (<span class="dht">DHT</span>)</td><td class="valor" id="t">--</td></tr>
+ <tr><td>Humedad del aire (<span class="dht">DHT</span>)</td><td class="valor" id="ha">--</td></tr>
  <tr><td>Sensor de suelo (0 a 4095)</td><td class="valor" id="s">--</td></tr>
  <tr><td>Ventilador</td><td class="valor" id="v">--</td></tr>
  <tr><td>Bomba</td><td class="valor" id="b">--</td></tr>
@@ -126,6 +135,7 @@ async function pedir(letra) { await fetch('/accion?letra=' + letra, { method: 'P
 async function actualizar() {
   try {
     const d = await (await fetch('/datos', { cache: 'no-store' })).json();
+    document.querySelectorAll('.dht').forEach(e => e.textContent = d.sensor);
     document.getElementById('t').textContent = d.temperatura === null ? 'sin lectura' : d.temperatura.toFixed(1) + ' °C';
     document.getElementById('ha').textContent = d.humedadAire === null ? '--' : d.humedadAire.toFixed(0) + ' %';
     document.getElementById('s').textContent = d.suelo;
@@ -140,6 +150,7 @@ actualizar(); setInterval(actualizar, 1000);
 
 void responderDatos() {
   String json = "{";
+  json += "\"sensor\":\"" + String(NOMBRE_DHT) + "\",";
   json += "\"temperatura\":" + (isnan(temperatura) ? String("null") : String(temperatura, 1)) + ",";
   json += "\"humedadAire\":" + (isnan(humedadAire) ? String("null") : String(humedadAire, 0)) + ",";
   json += "\"suelo\":" + String(lecturaSuelo) + ",";
@@ -159,7 +170,7 @@ void setup() {
   Serial.begin(115200);
   Serial.setTxTimeoutMs(0);
   delay(1000);
-  Serial.println("=== Prueba de componentes ===");
+  Serial.printf("=== Prueba de componentes (version %s) ===\n", NOMBRE_DHT);
   Serial.println("v ventilador, b bomba 2 s, a/m/c ventana 90/45/0, x apagar todo");
 
   ledcAttach(PIN_SERVO, 50, 14);
@@ -170,6 +181,7 @@ void setup() {
   // se prueba cada red unos segundos; sin wifi, la prueba sigue por el monitor serie
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(false);
+  WiFi.setHostname(NOMBRE_EN_LA_RED);
   const int cantidad = sizeof(REDES_WIFI) / sizeof(REDES_WIFI[0]);
   for (int i = 0; i < cantidad && WiFi.status() != WL_CONNECTED; i++) {
     if (strlen(REDES_WIFI[i].nombre) == 0) continue;
@@ -185,8 +197,15 @@ void setup() {
   }
   if (WiFi.status() == WL_CONNECTED) {
     rgbLedWrite(PIN_LED_RGB, 0, 40, 0);
+    // se anuncia el nombre invernadero.local, igual que el programa principal
+    if (MDNS.begin(NOMBRE_EN_LA_RED)) {
+      MDNS.addService("http", "tcp", 80);
+    }
     Serial.print("Abrir en el navegador: http://");
-    Serial.println(WiFi.localIP());
+    Serial.print(WiFi.localIP());
+    Serial.print("  o  http://");
+    Serial.print(NOMBRE_EN_LA_RED);
+    Serial.println(".local");
   } else {
     rgbLedWrite(PIN_LED_RGB, 40, 0, 0);
     Serial.println("Sin wifi: usar el monitor serie");
@@ -220,7 +239,7 @@ void loop() {
   if (millis() - ultimaLectura >= 1000) {
     ultimaLectura = millis();
     lecturaSuelo = leerSuelo();
-    // el DHT22 solo se lee cada 2 segundos
+    // el sensor de temperatura se lee cada 2 segundos (el DHT22 no aguanta menos)
     static bool tocaDht = false;
     tocaDht = !tocaDht;
     if (tocaDht) {

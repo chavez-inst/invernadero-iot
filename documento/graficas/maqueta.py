@@ -42,12 +42,17 @@ def vista_arriba(ejes):
     ejes.add_patch(parches.Rectangle((18.5, 12), 0.8, 2.2, facecolor="#1D1D1D"))
     ejes.text(19.6, 11.4, "sensor de\nhumedad", fontsize=6.5, color=TINTA)
     ejes.add_patch(parches.Rectangle((23.5, 22.0), 1.6, 0.5, facecolor="#E8604C"))
-    ejes.text(24.3, 20.6, "DHT22", fontsize=6.5, color=TINTA, ha="center")
+    ejes.text(24.3, 20.6, "DHT", fontsize=6.5, color=TINTA, ha="center")
     # deposito, protoboard y eliminador
-    ejes.add_patch(parches.Circle((34, 28.5), 4, facecolor=AGUA, edgecolor=TINTA, linewidth=1.2))
-    ejes.text(34, 28.5, "Depósito\ncon bomba", ha="center", va="center", fontsize=7.5, color=TINTA)
-    ejes.plot([31, 26, 26], [28.5, 28.5, 22.5], color="#7FA9C9", linewidth=2.5)
-    ejes.text(26.4, 30.0, "manguera (entra por la pared trasera)", fontsize=6.5, color="#56697D", ha="right")
+    ejes.add_patch(parches.Circle((37.4, 28.5), 3.2, facecolor=AGUA, edgecolor=TINTA, linewidth=1.2))
+    ejes.text(37.4, 28.5, "Depósito", ha="center", va="center", fontsize=7.5, color=TINTA)
+    # la bomba es de diafragma: va fuera del agua, junto al deposito
+    ejes.add_patch(parches.Rectangle((29.5, 27.5), 4, 2.2, facecolor="#B9C2CB", edgecolor=TINTA, linewidth=1.2))
+    ejes.text(31.5, 28.6, "bomba", ha="center", va="center", fontsize=6.8, color=TINTA)
+    ejes.plot([33.5, 34.2], [28.6, 28.6], color="#7FA9C9", linewidth=2.5)
+    ejes.plot([29.5, 26, 26], [28.6, 28.6, 22.5], color="#7FA9C9", linewidth=2.5)
+    ejes.text(25.6, 30.4, "manguera (entra por la pared trasera\ny riega sobre la tierra)", fontsize=6.5, color="#56697D",
+              ha="right")
     rectangulo(ejes, 31.5, 12, 16.5, 5.5, color="#F3EBD6")
     ejes.text(36.6, 14.75, "Protoboard 830\nfila 1 a la\nizquierda", ha="center", va="center", fontsize=6.5, color=TINTA)
     rectangulo(ejes, 42, 12.3, 6.3, 4.9, color="#2B2F36")
@@ -90,8 +95,10 @@ def piezas(ejes):
               ha="center", va="top", fontsize=6.8, color=TINTA)
     ejes.add_patch(parches.Rectangle((44, 18), 2, 1.5, facecolor="#FFFFFF", edgecolor=TINTA))
     # tira del frente
-    rectangulo(ejes, 0.5, 23.5, 26, 2, texto="Tira del frente 26 × 2 (viga de arriba)", tam=7)
-    ejes.text(13.5, 30, "Sobra: guardarla por si una pieza sale mal", ha="center", fontsize=7.5, color="#56697D")
+    ejes.add_patch(parches.Polygon([(0.5, 23.5), (26.5, 23.5), (26.5, 25.5), (13.5, 30.5), (0.5, 25.5)],
+                                   facecolor=CARTON, edgecolor=TINTA, linewidth=1.2))
+    ejes.text(13.5, 25.3, "Frontón: 26 de ancho, 2 en los lados y 7 en la punta", ha="center", fontsize=6.8, color=TINTA)
+    ejes.text(13.5, 33, "Sobra: guardarla por si una pieza sale mal", ha="center", fontsize=7.5, color="#56697D")
     ejes.set_xlim(-1, 51)
     ejes.set_ylim(-1, 36)
 
@@ -103,11 +110,11 @@ def vista_frente(ejes):
     ejes.add_patch(parches.Rectangle((0, 0), 0.5, 16, facecolor=CARTON, edgecolor=TINTA))
     ejes.add_patch(parches.Rectangle((25.5, 0), 0.5, 16, facecolor=CARTON, edgecolor=TINTA))
     ejes.add_patch(parches.Polygon([(0, 16), (13, 21), (26, 16)], closed=False, fill=False, edgecolor=TINTA, linewidth=2))
-    ejes.add_patch(parches.Polygon([(0.5, 16), (13, 20.8), (25.5, 16)], facecolor=MICA, edgecolor="none"))
-    ejes.text(13, 18.2, "techo de mica\n(2 piezas de 18 × 14)", ha="center", fontsize=7, color=TINTA)
-    ejes.add_patch(parches.Rectangle((0, 15), 26, 1, facecolor=CARTON, edgecolor=TINTA))
-    ejes.add_patch(parches.Rectangle((0.5, 0.2), 25, 14.8, facecolor=MICA, edgecolor="#7FA9C9", alpha=0.45, linestyle="--"))
-    ejes.text(13, 13.5, "frente: hoja de mica pegada solo de arriba (se levanta)", ha="center", fontsize=7, color=TINTA)
+    # fronton: sostiene el techo de mica por enfrente
+    ejes.add_patch(parches.Polygon([(0, 14), (26, 14), (26, 16), (13, 21), (0, 16)], facecolor=CARTON, edgecolor=TINTA))
+    ejes.text(13, 16.6, "frontón (encima va el techo de mica,\n2 piezas de 19 × 14)", ha="center", fontsize=7, color=TINTA)
+    ejes.add_patch(parches.Rectangle((0.5, 0.2), 25, 13.8, facecolor=MICA, edgecolor="#7FA9C9", alpha=0.45, linestyle="--"))
+    ejes.text(13, 12.8, "frente: hoja de mica pegada solo de arriba (se levanta)", ha="center", fontsize=7, color=TINTA)
     # ventana abierta con el servo como bisagra
     ejes.plot([0.25, -3.5], [13, 8.8], color="#F2A33A", linewidth=3)
     ejes.add_patch(parches.Rectangle((0.6, 13.1), 1.3, 2.2, facecolor="#2F6FD6"))
@@ -121,7 +128,7 @@ def vista_frente(ejes):
     ejes.plot([9, 9], [7, 10.5], color="#0E7471", linewidth=2)
     ejes.add_patch(parches.Ellipse((9, 11), 3, 1.4, facecolor="#1FA3A0"))
     ejes.add_patch(parches.Rectangle((20.5, 8), 1.6, 2.2, facecolor="#E8604C"))
-    ejes.text(21.3, 6.6, "DHT22 (en la\npared trasera)", fontsize=6.3, color=TINTA, ha="center")
+    ejes.text(21.3, 6.6, "DHT (en la\npared trasera)", fontsize=6.3, color=TINTA, ha="center")
     ejes.text(16.6, 4.8, "sensor", fontsize=6.3, color="white")
     cota(ejes, -1.6, 0, -1.6, 16, "16", desfase=(0, 0))
     cota(ejes, 28.5, 0, 28.5, 21, "21", desfase=(0.9, 0))
